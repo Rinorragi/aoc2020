@@ -5,5 +5,20 @@
 ```powershell
 dotnet new gitignore
 dotnet new sln -o AoC2020
+dotnet new classlib -lang "F#" -o src/AocHelper
+dotnet sln add .\src\AocHelper\AocHelper.fsproj
 dotnet new console -lang "F#" -o src/Day1
-dotnet sln add .\src\Day1\Day1.fsproj``` 
+dotnet new console -lang "F#" -o src/Day2
+dotnet add .\src\Day1\Day1.fsproj reference .\src\AocHelper\AocHelper.fsproj
+dotnet add .\src\Day2\Day2.fsproj reference .\src\AocHelper\AocHelper.fsproj
+dotnet sln add .\src\Day1\Day1.fsproj
+dotnet sln add .\src\Day2\Da21.fsproj
+```
+
+## Test how it works
+Assuming you are at root of aoc2020 folder:
+
+```powershell
+dotnet build
+dotnet run --project .\src\Day1\Day1.fsproj
+``` 

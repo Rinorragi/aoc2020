@@ -1,16 +1,10 @@
 open System
 open System.IO
+open Aoc.AocHelper
 
 // Advent of Code Day 1
 // https://adventofcode.com/2020/day/1
 // Find the two entries that sum to 2020; what do you get if you multiply them together?
-
-// Read line by line and yield as you go
-let readLines(filePath:string) = seq {
-    use sr = new StreamReader (filePath)
-    while not sr.EndOfStream do
-        yield sr.ReadLine ()
-}
 
 let rec cartList nll =
     let f0 n nll =
@@ -38,7 +32,7 @@ let main argv =
     let firstItem = candidate |> List.head
     let lastItem = candidate |> List.last
 
-    printf "%d " (firstItem*lastItem)
+    printfn "Answer: %d " (firstItem*lastItem)
 
     printfn "Advent of Code Day 1 - Part 2"
     let allPairs =
@@ -50,4 +44,5 @@ let main argv =
         elementToMultipleCandidates |> Seq.pick (fun c ->
             allPairs |> Seq.tryPick (fun (a,b) -> if a + b + c = 2020 then Some (a*b*c) else None))
     
+    printfn "Answer: %d " answer
     0 // return an integer exit code
