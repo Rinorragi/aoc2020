@@ -58,10 +58,27 @@ let main argv =
         seatIds 
         |> Seq.map toSeatType
 
-    let answer = 
+    let seatIds = 
         seatDecoded 
-        |> Seq.mapi (fun i v -> i, v.Id)
-        |> Seq.maxBy snd
+        |> Seq.mapi (fun i v -> v.Id)
 
-    printfn "Highest id is %d " (snd answer)
+    let highestId =
+        seatIds
+        |> Seq.max
+
+    printfn "Highest id is %d " highestId
+
+    printfn "Advent of Code Day 5 - Part 2"
+    let lowestId = 
+        seatIds
+        |> Seq.min
+
+    let theoreticalIdSequence =
+        [lowestId .. highestId]
+
+    let answer = 
+        theoreticalIdSequence
+        |> List.except (seatIds |> Seq.toList)
+
+    printfn "%A " answer
     0 // return an integer exit code
