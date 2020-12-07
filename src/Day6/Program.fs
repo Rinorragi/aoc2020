@@ -42,7 +42,7 @@ let main argv =
         customGroups
         |> Array.map (
             fun customsGroup ->
-                customsGroup.Split(nl)
+                customsGroup.Split(nl, StringSplitOptions.RemoveEmptyEntries)
                 |> Array.map (
                     fun answerRow -> 
                         answerRow
