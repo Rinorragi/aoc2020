@@ -70,7 +70,7 @@ let main argv =
     printfn "Advent of Code Day 10 - Part 1"
 
     let joltInput = 
-        File.ReadAllLines("./input/input_day10_example2.txt")
+        File.ReadAllLines("./input/input_day10.txt")
         |> Array.map (fun f -> f |> System.Int32.Parse)
 
     let joltageAdapterChain = 
