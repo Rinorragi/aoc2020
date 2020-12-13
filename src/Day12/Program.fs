@@ -46,27 +46,34 @@ let main argv =
     let mutable waypointVerticalPos = 1
     let mutable waypointHorizontalPos = 10
     for instruct in navigationInput do
-        let wpCurrentVertical = waypointVerticalPos
-        let wpCurrentHorizontal = waypointHorizontalPos
+        printf "%c%d: " instruct.Command instruct.Value
         match instruct.Command with  
         | 'N' -> waypointVerticalPos <- waypointVerticalPos + instruct.Value
         | 'S' -> waypointVerticalPos <- waypointVerticalPos - instruct.Value 
         | 'E' -> waypointHorizontalPos <- waypointHorizontalPos + instruct.Value
         | 'W' -> waypointHorizontalPos <- waypointHorizontalPos - instruct.Value
         | 'L' -> 
-            waypointHorizontalPos <- -1 * wpCurrentVertical // North becomes west or south becomes east, both means -1
-            waypointVerticalPos <- wpCurrentHorizontal // East becomes north or west becomes south
+            let howManyTimes = instruct.Value / 90
+            for i in 1 .. howManyTimes do 
+                let wpCurrentVertical = waypointVerticalPos
+                let wpCurrentHorizontal = waypointHorizontalPos
+                waypointHorizontalPos <- -1 * wpCurrentVertical // North becomes west or south becomes east, both means -1
+                waypointVerticalPos <- wpCurrentHorizontal // East becomes north or west becomes south
         | 'R' -> 
-            waypointHorizontalPos <- wpCurrentVertical // North becomes east or south becomes west
-            waypointVerticalPos <- -1 * wpCurrentHorizontal // East becomes south or west becomes north
+            let howManyTimes = instruct.Value / 90
+            for i in 1 .. howManyTimes do 
+                let wpCurrentVertical = waypointVerticalPos
+                let wpCurrentHorizontal = waypointHorizontalPos
+                waypointHorizontalPos <- wpCurrentVertical // North becomes east or south becomes west
+                waypointVerticalPos <- -1 * wpCurrentHorizontal // East becomes south or west becomes north
         | 'F' -> 
             let oldVerticalPos = verticalPos
             let oldHorizontalPos = horizontalPos
             verticalPos <- verticalPos + (instruct.Value * waypointVerticalPos)
             horizontalPos <- horizontalPos + (instruct.Value * waypointHorizontalPos)
-            printfn "From (%d,%d) towards (%d,%d) %d times to position (%d,%d)" oldVerticalPos oldHorizontalPos waypointVerticalPos waypointHorizontalPos instruct.Value verticalPos horizontalPos
-        | _ -> printfn "Incomplete match with %A " instruct
-
+            printf "From (%d,%d) towards (%d,%d) %d times to position (%d,%d)" oldVerticalPos oldHorizontalPos waypointVerticalPos waypointHorizontalPos instruct.Value verticalPos horizontalPos
+        | _ -> printf "Incomplete match with %A " instruct
+        printfn " waypoint at (%d,%d)" waypointVerticalPos waypointHorizontalPos
     let answer = (abs verticalPos) + (abs horizontalPos)
     printfn "Part 2: Manhattan distance from (vertical,horizontal) 0,0 to %d %d is %d" verticalPos horizontalPos answer
 
