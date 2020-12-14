@@ -25,32 +25,10 @@ let intervalForBusses (busSeries : Bus array) (initialIndex : bigint) (step : bi
                 firstMatch <- index
                 index <- index + step
             else 
-                printfn "Interval %A found at %A for array %A" (firstMatch - index) index busSeries
                 continueLooping <- false
         else 
             index <- index + step
     firstMatch, index
-
-let matchSeriesOfBusses (busSeries : Bus array) (initialIndex : bigint) (step : bigint) =
-    let mutable index = initialIndex
-    let mutable continueLooping = true
-    let totalBuses = busSeries.Length
-
-    while continueLooping do 
-        let fixedIndex = index
-        let trial = 
-            busSeries
-            |> Array.map (fun f -> 
-                let remainder = (bigint.Remainder((fixedIndex + (bigint f.Wait)), (f.Id |> bigint)))
-                remainder = (bigint 0))
-        if (trial |> Array.filter (id) |> Array.length) = totalBuses
-        then
-            printfn "Interval %A found at %A for array %A" (index - initialIndex) index busSeries
-            continueLooping <- false
-        else 
-            printfn "Index at %A has values %A" index trial
-            index <- index + step
-    index
 
 [<EntryPoint>]
 let main argv =
@@ -96,13 +74,13 @@ let main argv =
     let mutable busAmount = 2
     let mutable startIndex = bigint (busSeries.[0].Id - busSeries.[0].Wait)
     let mutable interval = bigint (busSeries.[0].Id)
-    while busAmount < busSeries.Length do
+    while busAmount <= busSeries.Length do
         let busRoutePart = busSeries |> Array.take busAmount
         let intervalFound = intervalForBusses busRoutePart startIndex interval
         startIndex <- (fst intervalFound)
         interval <- (snd intervalFound) - (fst intervalFound)
+        printfn "Interval %A for %d busses found between (%A - %A) with startIndex %A" interval busAmount (fst intervalFound) (snd intervalFound) startIndex
         busAmount <- busAmount + 1
-        printfn "Interval %A found between %A - %A" interval (fst intervalFound) (snd intervalFound)
-    let earliesForAll = matchSeriesOfBusses busSeries startIndex interval
-    printfn "Answer part 2: %A" earliesForAll
+    printfn "Answer part 2: %A" startIndex
+    
     0 // return an integer exit code
