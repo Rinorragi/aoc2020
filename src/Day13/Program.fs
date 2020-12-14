@@ -6,6 +6,52 @@ type Bus = {
     Wait : int
 }
 
+let intervalForBusses (busSeries : Bus array) (initialIndex : bigint) (step : bigint) =
+    let mutable index = initialIndex
+    let mutable continueLooping = true
+    let totalBuses = busSeries.Length
+    let mutable firstMatch = bigint 0
+
+    while continueLooping do 
+        let trial = 
+            busSeries
+            |> Array.map (fun f -> 
+                let remainder = (bigint.Remainder((index + (bigint f.Wait)), (f.Id |> bigint)))
+                remainder = (bigint 0))
+        if (trial |> Array.filter (id) |> Array.length) = totalBuses 
+        then
+            if firstMatch = bigint 0
+            then 
+                firstMatch <- index
+                index <- index + step
+            else 
+                printfn "Interval %A found at %A for array %A" (firstMatch - index) index busSeries
+                continueLooping <- false
+        else 
+            index <- index + step
+    firstMatch, index
+
+let matchSeriesOfBusses (busSeries : Bus array) (initialIndex : bigint) (step : bigint) =
+    let mutable index = initialIndex
+    let mutable continueLooping = true
+    let totalBuses = busSeries.Length
+
+    while continueLooping do 
+        let fixedIndex = index
+        let trial = 
+            busSeries
+            |> Array.map (fun f -> 
+                let remainder = (bigint.Remainder((fixedIndex + (bigint f.Wait)), (f.Id |> bigint)))
+                remainder = (bigint 0))
+        if (trial |> Array.filter (id) |> Array.length) = totalBuses
+        then
+            printfn "Interval %A found at %A for array %A" (index - initialIndex) index busSeries
+            continueLooping <- false
+        else 
+            printfn "Index at %A has values %A" index trial
+            index <- index + step
+    index
+
 [<EntryPoint>]
 let main argv =
     printfn "Advent of Code Day 13 - Part 1"
@@ -38,32 +84,22 @@ let main argv =
         )
         |> Array.filter (fun f -> f.IsSome)
         |> Array.map (fun f -> f.Value)
+        |> Array.sortBy (fun f -> f.Id)
     
-    printfn "Bus series %A " busSeries
-    
-    let mutable index = bigint 0
-    let mutable continueLooping = true
-    let longestBusRoute = 
-        busSeries
-        |> Array.maxBy (fun f -> f.Id)
-    let step = (bigint longestBusRoute.Id)
-
-    while continueLooping do 
-        printf "Attempt %A" index
-        let fixedIndex = index - bigint longestBusRoute.Wait
-        let trial = 
-            busSeries
-            |> Array.map (fun f -> 
-                let remainder = (bigint.Remainder((fixedIndex + (bigint f.Wait)), (f.Id |> bigint)))
-                printf " (%d, %A)" f.Id remainder
-                remainder = (bigint 0))
-        if (trial |> Array.filter (id) |> Array.length) = busSeries.Length 
-        then
-            printfn ""
-            printfn "Answer at %A is %A" fixedIndex trial
-            continueLooping <- false
-        else
-            index <- index + step
-            printfn ""
-    
+    // 7,0
+    // 13,1
+    // 59,4
+    // 31,6
+    // 19,7
+    // A: 1068781
+    // Try to find interval for the two biggest ones
+    let longBusRoutes = busSeries |> Array.skip (busSeries.Length - 2)
+    let initialIndexForBigOnes =  bigint longBusRoutes.[1].Id - bigint longBusRoutes.[1].Wait
+    let intervalFoundForBigones = intervalForBusses longBusRoutes initialIndexForBigOnes (bigint longBusRoutes.[1].Id)
+    // Started at 55, found at 645
+    let intervalForBigones = (snd intervalFoundForBigones) - (fst intervalFoundForBigones)
+    let startIndexForAll = (fst intervalFoundForBigones)
+    printfn "Interval %A found between %A - %A" intervalForBigones (fst intervalFoundForBigones) (snd intervalFoundForBigones)
+    let earliesForAll = matchSeriesOfBusses busSeries startIndexForAll intervalForBigones
+    printfn "Answer part 2: %A" earliesForAll
     0 // return an integer exit code
