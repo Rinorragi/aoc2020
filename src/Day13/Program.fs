@@ -84,7 +84,7 @@ let main argv =
         )
         |> Array.filter (fun f -> f.IsSome)
         |> Array.map (fun f -> f.Value)
-        |> Array.sortBy (fun f -> f.Id)
+        |> Array.sortByDescending (fun f -> f.Id)
     
     // 7,0
     // 13,1
@@ -93,13 +93,16 @@ let main argv =
     // 19,7
     // A: 1068781
     // Try to find interval for the two biggest ones
-    let longBusRoutes = busSeries |> Array.skip (busSeries.Length - 2)
-    let initialIndexForBigOnes =  bigint longBusRoutes.[1].Id - bigint longBusRoutes.[1].Wait
-    let intervalFoundForBigones = intervalForBusses longBusRoutes initialIndexForBigOnes (bigint longBusRoutes.[1].Id)
-    // Started at 55, found at 645
-    let intervalForBigones = (snd intervalFoundForBigones) - (fst intervalFoundForBigones)
-    let startIndexForAll = (fst intervalFoundForBigones)
-    printfn "Interval %A found between %A - %A" intervalForBigones (fst intervalFoundForBigones) (snd intervalFoundForBigones)
-    let earliesForAll = matchSeriesOfBusses busSeries startIndexForAll intervalForBigones
+    let mutable busAmount = 2
+    let mutable startIndex = bigint (busSeries.[0].Id - busSeries.[0].Wait)
+    let mutable interval = bigint (busSeries.[0].Id)
+    while busAmount < busSeries.Length do
+        let busRoutePart = busSeries |> Array.take busAmount
+        let intervalFound = intervalForBusses busRoutePart startIndex interval
+        startIndex <- (fst intervalFound)
+        interval <- (snd intervalFound) - (fst intervalFound)
+        busAmount <- busAmount + 1
+        printfn "Interval %A found between %A - %A" interval (fst intervalFound) (snd intervalFound)
+    let earliesForAll = matchSeriesOfBusses busSeries startIndex interval
     printfn "Answer part 2: %A" earliesForAll
     0 // return an integer exit code
