@@ -32,9 +32,6 @@ let splitTicket (param : string) =
     let sValues = param.Split(",")
     sValues
         |> Array.map System.Int32.Parse
-let getFrst (a, _, _) = a
-let getSnd (_, b, _) = b
-let getThrd (_, _, c) = c
 
 [<EntryPoint>]
 let main argv =
@@ -83,7 +80,7 @@ let main argv =
             let usedIndexes = 
                 match accState with 
                 | [] -> [] // list is empty
-                | head :: _ -> getThrd head // head has value, tail is ignored 
+                | (_, _, value) :: _ -> value // head has value, tail is ignored 
             let nextFreeIndex =
                 snd ruleMatch
                 |> Array.filter (fun rf -> not (usedIndexes |> List.contains rf))
@@ -92,9 +89,9 @@ let main argv =
             let updatedUsedIndexes = nextFreeIndex::usedIndexes
             let stateToAppend = rule, nextFreeIndex, updatedUsedIndexes
             stateToAppend::accState) []
-        |> List.filter (fun rf -> (getFrst rf).Name.Contains("departure")) // Filter the departure columns 
-        |> List.map (fun af -> // Rules does not matter any more, convert myTicket values to int64
-            int64 myTicket.[getSnd af])
+        |> List.filter (fun (rule, _, _) -> rule.Name.Contains("departure")) // Filter the departure columns 
+        |> List.map (fun (_,value,_) -> // Rules does not matter any more, convert myTicket values to int64
+            int64 myTicket.[value])
         |> List.reduce (fun acc value -> (acc * value)) // multiply all elements to get the answer
             
     printfn "Answer part 2: %d" answer2
