@@ -64,7 +64,7 @@ let main argv =
     let fieldArray = [|0 .. fieldAmount - 1|]
     let mutable fieldsFound : int array = [||]
     // Rules and to which fields they are matching
-    let ruleFields = 
+    let answer2 = 
         rules
         |> Array.map (fun rule ->
             let validField =
@@ -85,12 +85,8 @@ let main argv =
                 |> Array.head
             fieldsFound <- Array.append [|nextFreeIndex|] fieldsFound
             fst ruleToHandle, nextFreeIndex)
-    
-    let answer2 = 
-        ruleFields 
         |> Array.filter (fun rf -> (fst rf).Name.Contains("departure"))
         |> Array.map (fun af -> 
-            printfn "Index: %d Value: %d Rule: %A" (snd af) myTicket.[snd af] (fst af)
             int64 myTicket.[snd af])
         |> Array.reduce (fun acc value -> (acc * value))
             
