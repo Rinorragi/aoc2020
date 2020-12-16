@@ -81,9 +81,9 @@ let main argv =
         |> Array.sortBy (snd >> Array.length) // Sort the rule macthing arrays so that the least matching column is first
         |> Array.fold (fun (accState : (Rule * int * int list) list) (ruleMatch : Rule * int array) -> 
             let usedIndexes = 
-                match accState.Length with 
-                | 0 -> []
-                | _ -> accState |> List.head |> getThrd
+                match [] with 
+                | [] -> [] // array is empty
+                | head :: _ -> getThrd head // head has value, tail is ignored 
             let nextFreeIndex =
                 snd ruleMatch
                 |> Array.filter (fun rf -> not (usedIndexes |> List.contains rf))
