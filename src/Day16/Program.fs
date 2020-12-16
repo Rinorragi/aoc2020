@@ -32,6 +32,9 @@ let splitTicket (param : string) =
     let sValues = param.Split(",")
     sValues
         |> Array.map System.Int32.Parse
+let getFrst (a, _, _) = a
+let getSnd (_, b, _) = b
+let getThrd (_, _, c) = c
 
 [<EntryPoint>]
 let main argv =
@@ -63,8 +66,6 @@ let main argv =
                 |> Array.forall (id))
 
     let fieldAmount = myTicket.Length
-    let mutable fieldsFound : int array = [||]
-    
     let answer2 = 
         rules
         |> Array.map (fun rule -> // Rules and to which fields they are matching
@@ -78,18 +79,23 @@ let main argv =
                 |> Array.map (fst)
             rule, validField)
         |> Array.sortBy (snd >> Array.length) // Sort the rule macthing arrays so that the least matching column is first
-        |> Array.map (fun f -> // Hope that the above sort is enough to find an unique column for each, race condition is possible
-            let ruleToHandle = f
-            let nextFreeIndex = 
-                snd ruleToHandle 
-                |> Array.filter (fun rf -> not (fieldsFound |> Array.contains rf))
+        |> Array.fold (fun (accState : (Rule * int * int list) list) (ruleMatch : Rule * int array) -> 
+            let usedIndexes = 
+                match accState.Length with 
+                | 0 -> []
+                | _ -> accState |> List.head |> getThrd
+            let nextFreeIndex =
+                snd ruleMatch
+                |> Array.filter (fun rf -> not (usedIndexes |> List.contains rf))
                 |> Array.head
-            fieldsFound <- Array.append [|nextFreeIndex|] fieldsFound
-            fst ruleToHandle, nextFreeIndex)
-        |> Array.filter (fun rf -> (fst rf).Name.Contains("departure")) // Filter the departure columns 
-        |> Array.map (fun af -> // Rules does not matter any more, convert myTicket values to int64
-            int64 myTicket.[snd af])
-        |> Array.reduce (fun acc value -> (acc * value)) // multiply all elements to get the answer
+            let rule = fst ruleMatch
+            let updatedUsedIndexes = nextFreeIndex::usedIndexes
+            let stateToAppend = rule, nextFreeIndex, updatedUsedIndexes
+            stateToAppend::accState) []
+        |> List.filter (fun rf -> (getFrst rf).Name.Contains("departure")) // Filter the departure columns 
+        |> List.map (fun af -> // Rules does not matter any more, convert myTicket values to int64
+            int64 myTicket.[getSnd af])
+        |> List.reduce (fun acc value -> (acc * value)) // multiply all elements to get the answer
             
     printfn "Answer part 2: %d" answer2
 
