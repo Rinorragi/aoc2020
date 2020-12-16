@@ -54,21 +54,22 @@ let main argv =
         otherTickets 
         |> Array.sumBy (fun f -> invalidValues f rules)
     printfn "Answer part 1: %d" answerPart1
+    
     let validTickets = 
         otherTickets
         |> Array.filter (fun row -> 
             row 
                 |> Array.map (fun field -> (rules |> Array.exists (fun rule -> isFieldValid field rule))) 
                 |> Array.forall (id))
+
     let fieldAmount = myTicket.Length
-    let fieldArray = [|0 .. fieldAmount - 1|]
     let mutable fieldsFound : int array = [||]
-    // Rules and to which fields they are matching
+    
     let answer2 = 
         rules
-        |> Array.map (fun rule ->
+        |> Array.map (fun rule -> // Rules and to which fields they are matching
             let validField =
-                fieldArray
+                [|0 .. fieldAmount - 1|]
                 |> Array.map (fun col -> 
                     col, validTickets 
                     |> Array.map(fun r -> col, isFieldValid r.[col] rule)
@@ -76,8 +77,8 @@ let main argv =
                 |> Array.filter (snd)
                 |> Array.map (fst)
             rule, validField)
-        |> Array.sortBy (fun f -> snd f |> Array.length)
-        |> Array.map (fun f -> 
+        |> Array.sortBy (fun f -> snd f |> Array.length) // Sort the rule macthing arrays so that the least matching column is first
+        |> Array.map (fun f -> // Hope that the above sort is enough to find an unique column for each, race condition is possible
             let ruleToHandle = f
             let nextFreeIndex = 
                 snd ruleToHandle 
@@ -85,10 +86,10 @@ let main argv =
                 |> Array.head
             fieldsFound <- Array.append [|nextFreeIndex|] fieldsFound
             fst ruleToHandle, nextFreeIndex)
-        |> Array.filter (fun rf -> (fst rf).Name.Contains("departure"))
-        |> Array.map (fun af -> 
+        |> Array.filter (fun rf -> (fst rf).Name.Contains("departure")) // Filter the departure columns 
+        |> Array.map (fun af -> // Rules does not matter any more, convert myTicket values to int64
             int64 myTicket.[snd af])
-        |> Array.reduce (fun acc value -> (acc * value))
+        |> Array.reduce (fun acc value -> (acc * value)) // multiply all elements to get the answer
             
     printfn "Answer part 2: %d" answer2
 
