@@ -77,7 +77,7 @@ let main argv =
                 |> Array.filter (snd)
                 |> Array.map (fst)
             rule, validField)
-        |> Array.sortBy (fun f -> snd f |> Array.length) // Sort the rule macthing arrays so that the least matching column is first
+        |> Array.sortBy (snd >> Array.length) // Sort the rule macthing arrays so that the least matching column is first
         |> Array.map (fun f -> // Hope that the above sort is enough to find an unique column for each, race condition is possible
             let ruleToHandle = f
             let nextFreeIndex = 
