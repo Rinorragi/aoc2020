@@ -3,6 +3,7 @@ open System.Collections.Generic
 
 [<EntryPoint>]
 let main argv =
+    printfn "Advent of Code Day 15"
     let initialNumbers = [15;5;1;4;7;0]
     // Set last number to last number spot
     let mutable lastNumber = initialNumbers.[initialNumbers.Length - 1]
