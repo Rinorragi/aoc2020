@@ -4,14 +4,31 @@ type Cube = {
     X : int
     Y : int
     Z : int
+    W : int
     Activated : bool
 }
+let initCube (x : int) (y : int) =
+    {
+        X = x
+        Y = y
+        Z = 0
+        W = 0
+        Activated = true }
 
-let createCube (x : int) (y : int) (z : int) =
+let createCube4d (x : int) (y : int) (z : int) (w : int) =
     {
         X = x
         Y = y
         Z = z
+        W = w
+        Activated = true }
+
+let createCube3d (x : int) (y : int) (z : int) =     
+    {
+        X = x
+        Y = y
+        Z = z
+        W = 0
         Activated = true }
 
 let countActiveNeighbors (x : int) (y : int) (z : int) (activeCubes : Cube list) =
@@ -54,12 +71,12 @@ let flipCubes (activeCubes : Cube list) =
             | Some ac -> 
                 if activeNeighbors >= 2 && activeNeighbors <= 3
                 then // remain active, otherwise disable 
-                    Some (createCube x y z)
+                    Some (createCube3d x y z)
                 else None
             | None -> 
                 if activeNeighbors = 3
                 then // activate
-                    Some (createCube x y z)
+                    Some (createCube3d x y z)
                 else None)
 
 let rec flipCubesBy (activeCubes : Cube list) (acc : int) =
@@ -74,22 +91,22 @@ let rec flipCubesBy (activeCubes : Cube list) (acc : int) =
 let main argv =
     printfn "Advent of Code Day 17"
     let cubeInput = System.IO.File.ReadAllLines "./input/input_day17.txt"
-    let activeCubes = 
+    let activeCubes =
         cubeInput 
         |> Array.rev // flip y to rise from bot to top
         |> Array.mapi (fun iy y -> 
             y 
                 |> Seq.mapi (fun ix x -> 
                     match x with
-                    | '#' -> Some(createCube ix iy 0)
+                    | '#' -> Some(initCube ix iy)
                     | _ -> None)
+                |> Seq.choose id
                 |> Array.ofSeq)
         |> Array.collect id
-        |> Array.choose id
         |> List.ofArray
     
-    let answerArray = flipCubesBy activeCubes 6
+    let answerPart1Array = flipCubesBy activeCubes 6
 
-    printfn "Part 1 answer: %d" answerArray.Length
+    printfn "Part 1 answer: %d" answerPart1Array.Length
  
     0 // return an integer exit code
