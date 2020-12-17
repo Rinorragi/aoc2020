@@ -31,22 +31,24 @@ let createCube3d (x : int) (y : int) (z : int) =
         W = 0
         Activated = true }
 
-let countActiveNeighbors (x : int) (y : int) (z : int) (activeCubes : Cube list) =
+let countActiveNeighbors (activeCubes : Cube list) (dimensions : int) (x : int) (y : int) (z : int) (w : int)  =
     // 26 neighbors from three dimensional array
     activeCubes
     |> List.choose (fun ac -> 
-        if  not (x = ac.X && y = ac.Y && z = ac.Z) // skip the given one
+        if  not (x = ac.X && y = ac.Y && z = ac.Z && w = ac.W) // skip the given one
             && ([x - 1 .. x + 1] |> List.contains ac.X)
             && ([y - 1 .. y + 1] |> List.contains ac.Y)
             && ([z - 1 .. z + 1] |> List.contains ac.Z)
+            && (dimensions = 3 
+                || (dimensions = 4 && ([w - 1 .. w + 1] |> List.contains ac.W)))
         then
             Some ac
         else None)
     |> List.length
 
 
-let flipCubes (activeCubes : Cube list) =
-    // Calculate the boundaries of cube dimension that could have activations
+let constructDimensionList (activeCubes : Cube list) (dimensions : int) =
+        // Calculate the boundaries of cube dimension that could have activations
     let minX = (activeCubes |> List.minBy (fun c -> c.X)).X - 1
     let maxX = (activeCubes |> List.maxBy (fun c -> c.X)).X + 1
     let minY = (activeCubes |> List.minBy (fun c -> c.Y)).Y - 1
@@ -59,33 +61,72 @@ let flipCubes (activeCubes : Cube list) =
          List.allPairs [minX .. maxX] [minY .. maxY]
         |> List.allPairs [minZ .. maxZ]
         |> List.map (fun (z,(x,y)) -> x,y,z)
-    
-    dimensionList 
-        |> List.choose (fun (x,y,z) -> 
-            let optionableCube = (activeCubes |> List.tryPick (fun ac -> 
-                if ac.X = x && ac.Y = y && ac.Z = z && ac.Activated 
-                then Some ac
-                else None))
-            let activeNeighbors = countActiveNeighbors x y z activeCubes
-            match optionableCube with
-            | Some ac -> 
-                if activeNeighbors >= 2 && activeNeighbors <= 3
-                then // remain active, otherwise disable 
-                    Some (createCube3d x y z)
-                else None
-            | None -> 
-                if activeNeighbors = 3
-                then // activate
-                    Some (createCube3d x y z)
-                else None)
 
-let rec flipCubesBy (activeCubes : Cube list) (acc : int) =
+    match dimensions with
+    | 3 -> 
+        dimensionList
+            |> List.map (fun (x,y,z) -> x,y,z,0)
+    | 4 -> 
+        let minW = (activeCubes |> List.minBy (fun c -> c.W)).W - 1
+        let maxW = (activeCubes |> List.maxBy (fun c -> c.W)).W + 1
+        dimensionList
+            |> List.allPairs [minW .. maxW]
+            |> List.map (fun (w,(x,y,z)) -> x,y,z,w)
+    | _ -> failwith "Unsupported amount of dimensions for constructDimensionList"
+
+
+let flipCube3d (activeCubes : Cube list) (x : int) (y : int) (z : int)  = 
+    let optionableCube = (activeCubes |> List.tryPick (fun ac -> 
+        if ac.X = x && ac.Y = y && ac.Z = z && ac.Activated 
+        then Some ac
+        else None))
+    let activeNeighbors = countActiveNeighbors activeCubes 3 x y z 0 
+    match optionableCube with
+    | Some ac -> 
+        if activeNeighbors >= 2 && activeNeighbors <= 3
+        then // remain active, otherwise disable 
+            Some (createCube3d x y z)
+        else None
+    | None -> 
+        if activeNeighbors = 3
+        then // activate
+            Some (createCube3d x y z)
+        else None
+
+let flipCube4d (activeCubes : Cube list) (x : int) (y : int) (z : int) (w : int)  = 
+    let optionableCube = (activeCubes |> List.tryPick (fun ac -> 
+        if ac.X = x && ac.Y = y && ac.Z = z && ac.W = w && ac.Activated 
+        then Some ac
+        else None))
+    let activeNeighbors = countActiveNeighbors activeCubes 4 x y z w
+    match optionableCube with
+    | Some ac -> 
+        if activeNeighbors >= 2 && activeNeighbors <= 3
+        then // remain active, otherwise disable 
+            Some (createCube4d x y z w)
+        else None
+    | None -> 
+        if activeNeighbors = 3
+        then // activate
+            Some (createCube4d x y z w)
+        else None
+
+let flipCubes (activeCubes : Cube list) (dimensions : int)=
+    let dimensionList = constructDimensionList activeCubes dimensions
+    dimensionList 
+        |> List.choose (fun (x,y,z,w) -> 
+            match dimensions with 
+            | 3 -> flipCube3d activeCubes x y z
+            | 4 -> flipCube4d activeCubes x y z w
+            | _ -> failwith "Unsupported amount of dimensions for flipCubes" )
+
+let rec flipCubesBy (activeCubes : Cube list) (dimensions : int) (acc : int) =
     printfn "Attempt acc %d length %d" acc activeCubes.Length
     if acc = 0
     then
         activeCubes
     else 
-        flipCubesBy (flipCubes activeCubes) (acc - 1)
+        flipCubesBy (flipCubes activeCubes dimensions) dimensions (acc - 1)
 
 [<EntryPoint>]
 let main argv =
@@ -105,8 +146,10 @@ let main argv =
         |> Array.collect id
         |> List.ofArray
     
-    let answerPart1Array = flipCubesBy activeCubes 6
-
+    let answerPart1Array = flipCubesBy activeCubes 3 6
     printfn "Part 1 answer: %d" answerPart1Array.Length
+
+    let answerPart2Array = flipCubesBy activeCubes 4 6
+    printfn "Part 2 answer: %d" answerPart2Array.Length
  
     0 // return an integer exit code
