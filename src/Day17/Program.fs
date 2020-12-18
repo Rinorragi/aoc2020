@@ -6,30 +6,29 @@ type Cube = {
     Z : int
     W : int
     Activated : bool
-}
-let initCube (x : int) (y : int) =
-    {
-        X = x
-        Y = y
-        Z = 0
-        W = 0
-        Activated = true }
+} with 
+    static member InitCube (x : int) (y : int) =
+        {
+            X = x
+            Y = y
+            Z = 0
+            W = 0
+            Activated = true }
+    static member CreateCube4d (x : int) (y : int) (z : int) (w : int) =
+        {
+            X = x
+            Y = y
+            Z = z
+            W = w
+            Activated = true }
 
-let createCube4d (x : int) (y : int) (z : int) (w : int) =
-    {
-        X = x
-        Y = y
-        Z = z
-        W = w
-        Activated = true }
-
-let createCube3d (x : int) (y : int) (z : int) =     
-    {
-        X = x
-        Y = y
-        Z = z
-        W = 0
-        Activated = true }
+    static member CreateCube3d (x : int) (y : int) (z : int) =     
+        {
+            X = x
+            Y = y
+            Z = z
+            W = 0
+            Activated = true }
 
 let countActiveNeighbors (activeCubes : Cube list) (dimensions : int) (x : int) (y : int) (z : int) (w : int)  =
     // 26 neighbors from three dimensional array
@@ -85,12 +84,12 @@ let flipCube3d (activeCubes : Cube list) (x : int) (y : int) (z : int)  =
     | Some ac -> 
         if activeNeighbors >= 2 && activeNeighbors <= 3
         then // remain active, otherwise disable 
-            Some (createCube3d x y z)
+            Some (Cube.CreateCube3d x y z)
         else None
     | None -> 
         if activeNeighbors = 3
         then // activate
-            Some (createCube3d x y z)
+            Some (Cube.CreateCube3d x y z)
         else None
 
 let flipCube4d (activeCubes : Cube list) (x : int) (y : int) (z : int) (w : int)  = 
@@ -103,12 +102,12 @@ let flipCube4d (activeCubes : Cube list) (x : int) (y : int) (z : int) (w : int)
     | Some ac -> 
         if activeNeighbors >= 2 && activeNeighbors <= 3
         then // remain active, otherwise disable 
-            Some (createCube4d x y z w)
+            Some (Cube.CreateCube4d x y z w)
         else None
     | None -> 
         if activeNeighbors = 3
         then // activate
-            Some (createCube4d x y z w)
+            Some (Cube.CreateCube4d x y z w)
         else None
 
 let flipCubes (activeCubes : Cube list) (dimensions : int)=
@@ -139,7 +138,7 @@ let main argv =
             y 
                 |> Seq.mapi (fun ix x -> 
                     match x with
-                    | '#' -> Some(initCube ix iy)
+                    | '#' -> Some(Cube.InitCube ix iy)
                     | _ -> None)
                 |> Seq.choose id
                 |> Array.ofSeq)
