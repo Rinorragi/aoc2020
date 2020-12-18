@@ -61,9 +61,9 @@ let rec solveString (mathStr : string) =
             else mathStr.[lastIndex + 1 .. ]
         let prettifiedMathStr = (
             mathStr.[ .. firstIndex - 1] 
-            + subValue.ToString("X").ToLowerInvariant() 
+            + subValue.ToString("G").ToLowerInvariant() 
             + lastStr)
-        printfn "pf: %s,%s,%s" mathStr.[ .. firstIndex - 1] (subValue.ToString("X").ToLowerInvariant()) lastStr 
+        printfn "pf: %s,%s,%s" mathStr.[ .. firstIndex - 1] (subValue.ToString("G").ToLowerInvariant()) lastStr 
         solveString prettifiedMathStr 
 
 [<EntryPoint>]
