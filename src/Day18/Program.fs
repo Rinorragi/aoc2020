@@ -18,7 +18,7 @@ let rec calculateNext (mathArray : string array) (lastOperator : string) (acc : 
     else
         let mathTail = mathArray |> Array.tail    
         let mathHead = mathArray.[0]
-        printfn "Head: '%s' Operator: '%s' Value: '%d' Arraytail: %A" mathHead lastOperator acc mathTail
+        //printfn "Head: '%s' Operator: '%s' Value: '%d' Arraytail: %A" mathHead lastOperator acc mathTail
         match mathHead with
         | Int64Matcher int64Head -> 
             match lastOperator with 
@@ -33,7 +33,38 @@ let rec calculateNext (mathArray : string array) (lastOperator : string) (acc : 
             calculateNext mathTail "+" acc
         | RegexMatcher @"(\*)" [ op ] ->
             calculateNext mathTail "*" acc
-        | _ -> failwith "Not yet"
+        | _ -> failwith ("Unsupported string:" + mathHead)
+
+let rec findClosingBracket (mathStr : string) (index : int) (acc : int) = 
+    match mathStr.[0] with
+    | ')' -> 
+        if (acc > 0) 
+        then findClosingBracket (mathStr.[1 ..]) (index + 1) (acc - 1)
+        else index + 1
+    | '(' -> findClosingBracket (mathStr.[1 ..]) (index + 1) (acc + 1)
+    | _ -> findClosingBracket (mathStr.[1 ..]) (index + 1) acc
+
+let rec solveString (mathStr : string) =
+    printfn "ss: %s" mathStr
+    System.Threading.Thread.Sleep(100)
+    if not (mathStr.Contains "(") 
+    then
+        calculateNext (mathStr.Split(" ",StringSplitOptions.RemoveEmptyEntries)) "" (int64 0)
+    else
+        let firstIndex = mathStr.IndexOf("(")
+        let sub = mathStr.[firstIndex + 1 ..]
+        let lastIndex = findClosingBracket sub firstIndex 0
+        let subValue = solveString (mathStr.[firstIndex + 1 .. lastIndex - 1])
+        let lastStr = 
+            if (lastIndex + 1 >= mathStr.Length) 
+            then ""
+            else mathStr.[lastIndex + 1 .. ]
+        let prettifiedMathStr = (
+            mathStr.[ .. firstIndex - 1] 
+            + subValue.ToString("X").ToLowerInvariant() 
+            + lastStr)
+        printfn "pf: %s,%s,%s" mathStr.[ .. firstIndex - 1] (subValue.ToString("X").ToLowerInvariant()) lastStr 
+        solveString prettifiedMathStr 
 
 [<EntryPoint>]
 let main argv =
@@ -41,9 +72,7 @@ let main argv =
     let mathInput = System.IO.File.ReadAllLines "./input/input_day18_example.txt"
     let mathArrays = 
         mathInput
-        |> Array.map (fun s -> s.Split(" "))
+        |> Array.map solveString
 
-    let test = calculateNext mathArrays.[0] "" (int64 0)
-
-    printfn "%d" test
+    printfn "%A" mathArrays
     0 // return an integer exit code
