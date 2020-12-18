@@ -18,7 +18,6 @@ let rec calculateNext (mathArray : string array) (lastOperator : string) (acc : 
     else
         let mathTail = mathArray |> Array.tail    
         let mathHead = mathArray.[0]
-        //printfn "Head: '%s' Operator: '%s' Value: '%d' Arraytail: %A" mathHead lastOperator acc mathTail
         match mathHead with
         | Int64Matcher int64Head -> 
             match lastOperator with 
@@ -45,8 +44,6 @@ let rec findClosingBracket (mathStr : string) (index : int) (acc : int) =
     | _ -> findClosingBracket (mathStr.[1 ..]) (index + 1) acc
 
 let rec solveString (mathStr : string) =
-    printfn "ss: %s" mathStr
-    System.Threading.Thread.Sleep(100)
     if not (mathStr.Contains "(") 
     then
         calculateNext (mathStr.Split(" ",StringSplitOptions.RemoveEmptyEntries)) "" (int64 0)
@@ -63,16 +60,15 @@ let rec solveString (mathStr : string) =
             mathStr.[ .. firstIndex - 1] 
             + subValue.ToString("G").ToLowerInvariant() 
             + lastStr)
-        printfn "pf: %s,%s,%s" mathStr.[ .. firstIndex - 1] (subValue.ToString("G").ToLowerInvariant()) lastStr 
         solveString prettifiedMathStr 
 
 [<EntryPoint>]
 let main argv =
     printfn "Advent of Code Day 18"
-    let mathInput = System.IO.File.ReadAllLines "./input/input_day18_example.txt"
-    let mathArrays = 
+    let mathInput = System.IO.File.ReadAllLines "./input/input_day18.txt"
+    let answer1 = 
         mathInput
-        |> Array.map solveString
+        |> Array.sumBy solveString
 
-    printfn "%A" mathArrays
+    printfn "%d" answer1
     0 // return an integer exit code
