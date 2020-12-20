@@ -22,21 +22,6 @@ type SatelliteRule = {
 let concatMaps (ruleMap1 : Map<int,SatelliteRule>) (ruleMap2 : Map<int,SatelliteRule>) = 
     Map.fold (fun acc key value -> Map.add key value acc) ruleMap1 ruleMap2
 
-let pickRule (ruleStr : string) (ruleStrArray : (int * string) array) = 
-    let nextRules = 
-        ruleStr.Split(" ", StringSplitOptions.RemoveEmptyEntries)
-        |> Array.map (fun s -> 
-            let nrNro = s |> System.Int32.Parse
-            let nextRule = 
-                ruleStrArray 
-                |> Array.pick (fun (aNro, aRule) -> 
-                    if (aNro = nrNro)
-                    then Some(aNro, aRule)
-                    else None)
-            nextRule
-        )
-    nextRules
-
 let rec mergeArrayOfMaps (ruleMapArr : Map<int,SatelliteRule> array) (ruleMapAcc : Map<int,SatelliteRule>) = 
     if ruleMapArr.Length = 0
     then
@@ -72,8 +57,41 @@ let constructRule (rule : (int * string)) =
                 |> Array.map (fun s -> s |> System.Int32.Parse)
             SatelliteRule.InitRule idNro isTerminating hasAlternatives nextRules [||] ""
 
-let rec validateSatelliteMessage (str : string) (startRule : SatelliteRule) (rules : Map<int,SatelliteRule>) =
-    true
+let rec validateSatelliteMessageAgainstRule (str : string) (rule : SatelliteRule) (rules : Map<int,SatelliteRule>) (accInit : int) = 
+    // Rule is always connecting rule at the beginning
+    let mutable acc = accInit
+    let mutable shouldContinue = true
+    for r in rule.NextRules do
+        let nextRule = rules.[r]
+        if nextRule.IsCharacterRule
+        then 
+            printfn "Message: '%s' Rule: %d Acc: %d Char: %s IndexChar: %s" str nextRule.Number acc nextRule.Character (string str.[acc])
+            printfn "%A" nextRule
+            if (string str.[acc]) = rule.Character
+            then acc <- acc + 1
+            else shouldContinue <- false
+    
+    shouldContinue
+        (*
+        if rule.HasAlternatives
+        then
+            let nextRules =
+                rule.NextRules 
+                |> Array.map (fun r -> validateSatelliteMessageAgainstRule str rules.[r] rules acc)
+                |> Array.forall id
+            let otherRules =
+                rule.AlternativeRules 
+                |> Array.map (fun r -> validateSatelliteMessageAgainstRule str rules.[r] rules acc)
+                |> Array.forall id
+            nextRules || otherRules
+        else
+            rule.NextRules 
+            |> Array.map (fun r -> validateSatelliteMessageAgainstRule str rules.[r] rules acc)
+            |> Array.forall id**)
+            
+
+let validateSatelliteMessage (str : string) (startRule : SatelliteRule) (rules : Map<int,SatelliteRule>) =
+    validateSatelliteMessageAgainstRule str startRule rules 0
 
     
 [<EntryPoint>]
@@ -93,8 +111,12 @@ let main argv =
             (nro, rule))
         |> Map.ofArray
 
-    let startPoint = rules.[0]        
+    let startPoint = rules.[0]
+
+    let messages = 
+        satelliteInput.[1].Split(nl, StringSplitOptions.RemoveEmptyEntries)
+        |> Array.map (fun s -> (s, validateSatelliteMessage s startPoint rules))
     
-    printfn "%A" rules
+    printfn "NOT FINISHED - DOES NOT WORK YET"
     
     0 // return an integer exit code
